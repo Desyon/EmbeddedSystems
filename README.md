@@ -1,4 +1,5 @@
-# Embedded Systems
+[![Build Status](https://travis-ci.org/desyon/EmbeddedSystems.svg?branch=master)](https://travis-ci.org/desyon/EmbeddedSystems)
+# Embedded Systems 
 
 This repository contains 5 tasks for a university lecture embedded systems. All tasks are
 programmed in CLion. The Makefile contains confidential information about the lecture and therefore
