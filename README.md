@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/desyon/EmbeddedSystems.svg?branch=master)](https://travis-ci.org/desyon/EmbeddedSystems)
-# Embedded Systems 
+# Embedded Systems
 
-This repository contains 5 tasks for a university lecture embedded systems. All tasks are
-programmed in CLion. The Makefile contains confidential information about the lecture and therefore
-cannot be provided.
+This repository contains 5 tasks for a university lecture embedded systems. The Makefile contains
+confidential information about the lecture and therefore cannot be provided. The helper script
+`build.sh` was written by to build all projects within TracisCI.
 
 ## Task 1 - Command Line Parser
 
