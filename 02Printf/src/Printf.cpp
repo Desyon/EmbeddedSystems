@@ -23,20 +23,20 @@ char *Printf(char *destination, const void *end, const char *format, ...) {
   va_list argList;
   va_start(argList, format);
 
-  const char *position = format; //position counter in the format string
   char *nextOutput = destination;
 
-  for (position; END_OF_STRING != *position; position++) {
+  for (const char *position = format; END_OF_STRING != *position; position++) {
     //check if formatted print is needed
     if (FORMAT_IDENT != *position) {
-
+      *nextOutput = *position;
+      nextOutput++;
+      continue;
     } else {
       char formatChar = *(position + 1);
       switch (formatChar) {
         case INTEGER: break;
         case UNSIGNED: {
           nextOutput = numberToBase(nextOutput, end, va_arg(argList, unsigned int), 10);
-          nextOutput++;
           break;
         }
         case CHARACTER: {
@@ -50,13 +50,20 @@ char *Printf(char *destination, const void *end, const char *format, ...) {
         case PERCENT: break;
         default: return nullptr; //if unrecognized return nullptr
       }
+
+      position++;   //increase position pointer to skip next char
     }
   }
+
+  va_end(argList);
+
+  *nextOutput = END_OF_STRING;
+  return destination;
 }
 
 char *numberToBase(char *output, const void *end, unsigned int value, unsigned int base) {
   //check if an argument is empty or the output equal or behind the end of the output buffer
-  if(!output || !end || output >= end){
+  if (!output || !end || output >= end) {
     return nullptr;
   }
 
@@ -64,8 +71,8 @@ char *numberToBase(char *output, const void *end, unsigned int value, unsigned i
   value = value / base;                 //shift the value by the amount of base
 
   //recursion if the there are still digits left
-  if(value){
-    numberToBase(output, end, value, base);
+  if (value) {
+    output = numberToBase(output, end, value, base);
   }
 
   *output = digit;    //write the digit
