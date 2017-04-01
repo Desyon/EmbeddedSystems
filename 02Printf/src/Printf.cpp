@@ -110,16 +110,16 @@ char *printC(char *destination, const void *end, const char value) {
   return ++destination;
 }
 
-char *printS(char *destination, const void *end, char *value) {
-  if (end <= destination) return nullptr;
-
-  for (value; END_OF_STRING != value; value++) {
-    *destination = *value;
-    destination++;
-  }
-
-  return destination;
-}
+//char *printS(char *destination, const void *end, char *value) {
+//  if (end <= destination) return nullptr;
+//
+//  for (value; END_OF_STRING != value; value++) {
+//    *destination = *value;
+//    destination++;
+//  }
+//
+//  return destination;
+//}
 
 char *printX(char *destination, const void *end, const unsigned int value) {
   if (end <= destination) return nullptr;
