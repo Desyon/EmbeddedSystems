@@ -10,4 +10,4 @@ addons:
       - gcc-6
       - g++-6
       - build-essential
-script: ./buil.sh
+script: ./build.sh
