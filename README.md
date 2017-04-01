@@ -3,7 +3,7 @@
 
 This repository contains 5 tasks for a university lecture embedded systems. The Makefile contains
 confidential information about the lecture and therefore cannot be provided. The helper script
-`build.sh` was written by to build all projects within TracisCI.
+`build.sh` was written to build all projects within TracisCI.
 
 ## Task 1 - Command Line Parser
 
