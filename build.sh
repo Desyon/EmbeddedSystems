@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+#authored by cellebyte
+
 touch Makefile
 touch config.mk
 
