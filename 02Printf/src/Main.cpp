@@ -1,13 +1,33 @@
 #include "../include/Printf.h"
-#include <cstdio>
+#include <iostream>
 
 int main() {
   char buffer[1024];
+  char tinyBuffer[10];
+
   unsigned int test = 42;
 
-  printf("%s\n", Printf(buffer, buffer + 1023, "Forty Two %d %u %c %x %b %%", -42, test, '*', 42, 42));
-  //expected result: "Forty Two -42 42 * 0x2a 0b101010 %"
+  int success = 0;
 
-  //printf("%s\n", Printf(buffer, buffer + 1023, "Forty Two %d %u %c %s %x %b %%", -42, test, '*', "Hello World!", 42, 42));
-  //expected result: "Forty Two -42 42 * Hello World! 0x2a 0b101010 %"
+  success = Printf(buffer, buffer + 1023,
+                   "Forty Two %d %u %c %s %x %b %%", -42, test, '*', "Forty Two", 42, 42) ? 1 : 0;
+  if (success) {
+    std::cout << "Test 1:\t" << buffer << "\n";
+  } else {
+    std::cout << "Test 1:\tfailed\n";
+  }
+
+  success = Printf(tinyBuffer, tinyBuffer + 9, "A String That is too long for the buffer") ? 0 : 1;
+  if (success) {
+    std::cout << "Test 2:\tsuccess\n";
+  } else {
+    std::cout << "Test 2:\tfailed\n";
+  }
+
+  success = Printf(buffer, buffer + 1023, "%w %%%") ? 1 : 0;
+  if (success) {
+    std::cout << "Test 3:\tsuccess\n";
+  } else {
+    std::cout << "Test 3:\tfailed\n";
+  }
 }
