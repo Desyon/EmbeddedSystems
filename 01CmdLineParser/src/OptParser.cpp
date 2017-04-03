@@ -1,7 +1,7 @@
 /*
  * created by desyon on 20.03.17
  */
-#include "OptParser.h"
+#include "../include/OptParser.h"
 
 #define FLAG '-'
 #define END_OF_STRING '\0'

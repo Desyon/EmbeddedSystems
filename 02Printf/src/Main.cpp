@@ -7,27 +7,18 @@ int main() {
 
   unsigned int test = 42;
 
-  int success = 0;
+  int testSuccess = 0;
 
-  success = Printf(buffer, buffer + 1023,
-                   "Forty Two %d %u %c %s %x %b %%", -42, test, '*', "Forty Two", 42, 42) ? 1 : 0;
-  if (success) {
-    std::cout << "Test 1:\t" << buffer << "\n";
-  } else {
-    std::cout << "Test 1:\tfailed\n";
-  }
+  //testing
+  testSuccess = Printf(buffer, buffer + 1023, "Forty Two %d %u %c %s %x %b %%", -42, test, '*', "Forty Two", 42, 42) ? 0 : 1;
+  std::cout << buffer << "\n";
+  buffer[0] = '\0';
+  testSuccess |= Printf(tinyBuffer, tinyBuffer + 9, "A String That is too long for the buffer") ? 1 : 0;
+  std::cout << buffer << "\n";
+  buffer[0] = '\0';
+  testSuccess |= Printf(buffer, buffer + 1023, "%w %%%") ? 0 : 1;
+  std::cout << buffer << "\n";
 
-  success = Printf(tinyBuffer, tinyBuffer + 9, "A String That is too long for the buffer") ? 0 : 1;
-  if (success) {
-    std::cout << "Test 2:\tsuccess\n";
-  } else {
-    std::cout << "Test 2:\tfailed\n";
-  }
-
-  success = Printf(buffer, buffer + 1023, "%w %%%") ? 1 : 0;
-  if (success) {
-    std::cout << "Test 3:\tsuccess\n";
-  } else {
-    std::cout << "Test 3:\tfailed\n";
-  }
+  //if any test failed testSuccess is not 0
+  return testSuccess;
 }
