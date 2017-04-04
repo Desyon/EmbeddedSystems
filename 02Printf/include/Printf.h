@@ -3,6 +3,6 @@
 
 #include <cstdarg>
 
-char *Printf(char *destination, const void *end, const char *format, ...);
+char *Printf(char *dst, const void *end, const char *fmt, ...);
 
 #endif
