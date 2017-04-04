@@ -51,7 +51,7 @@ int main() {
 
   //null argument
   tinyBuffer[0] = '\0';
-  testSuccess = Printf(tinyBuffer, tinyBuffer + 9, 0, 25000) ? 0 : 1;
+  testSuccess = Printf(tinyBuffer, tinyBuffer + 9, 0, 25000) ? 1 : 0;
   if(testSuccess){
     std::cout << "Test 5: success\n";
   } else {

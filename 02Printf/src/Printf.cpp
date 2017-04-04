@@ -25,7 +25,8 @@ static const char digits[] = "0123456789abcdef";
 char *Printf(char *dst, const void *end, const char *fmt, ...) {
   //check if any argument is empty
   if (!dst || !end || !fmt) {
-    return nullptr;
+    *dst = END_OF_STRING;
+    return dst;
   }
 
   va_list argList;
