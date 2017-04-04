@@ -1,9 +1,20 @@
-#! /usr/bin/env bash
 
-#authored by cellebyte
+#! /usr/bin/env bash
+#   author: Cellebyte alias Marcel Fest
+
+# To install all requirered packages run:
+#   sudo apt-get install build-essential software-properties-common -y && \
+#   sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+#   sudo apt-get update && \
+#   sudo apt-get install gcc-6 g++-6 -y && \
 
 touch Makefile
 touch config.mk
+
+if [ -d ./bin ]
+    then
+        rm -rf ./bin
+fi
 
 COUNTER=1
 
@@ -24,11 +35,17 @@ for i in $(ls -d */); do echo '	@$(CXX) $(CXXFLAGS) -o $(OUTPUT)/'"${i%%/}"' '"$
 
 echo 'start:' >> Makefile
 echo '	$(SILENT_MKDIR)mkdir $(OUTPUT)' >> Makefile
-echo 'clean:' >> Makefile
-echo '	rm -rf $(OUTPUT)' >> Makefile
 
-make clean
 make start
 make build
 
-for i in $(ls bin/); do ./bin/$i; done
+for i in $(ls bin/); do ./bin/$i || echo "\n"; done
+
+if [ $? -eq 0 ]
+then
+    echo "Successfully build and tested!"
+    exit 0
+else
+    echo "Error in build or test!!" >&2
+    exit 1
+fi
