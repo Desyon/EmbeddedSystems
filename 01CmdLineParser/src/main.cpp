@@ -11,7 +11,8 @@ int main() {
    *  4 -x=value
    *  with x defining an argument option and value additional INFOo
    */
-  int testSuccess = 0;
+  int testSuccess;
+  int ret = 0;
 
   //test cases
   char *case1 = new char[3];
@@ -42,13 +43,77 @@ int main() {
 
   CmdLineOptParser parser;
 
-  testSuccess |= parser.Parse(7, allVals) ? 0 : 1;        //should be true
-  testSuccess |= parser.Parse(2, c1) ? 0 : 1;            //should be true
-  testSuccess |= parser.Parse(2, c2) ? 0 : 1;            //should be true
-  testSuccess |= parser.Parse(3, c3) ? 0 : 1;            //should be true
-  testSuccess |= parser.Parse(2, c4) ? 0 : 1;            //should be true
-  testSuccess |= parser.Parse(2, onlyDash) ? 1 : 0;     //should be false
-  testSuccess |= parser.Parse(2, onlyEquals) ? 1 : 0; //should be false
-  testSuccess |= parser.Parse(1, emptyVal) ? 1 : 0;    //should be false
-  testSuccess |= parser.Parse(4, multiOpt) ? 1 : 0;  //should be false
+  testSuccess = parser.Parse(7, allVals) ? 0 : 1;         //should be true
+  if(!testSuccess){
+    std::cout << "01: Test 1: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 1: failed\n";
+  }
+
+  testSuccess |= parser.Parse(2, c1) ? 0 : 1;             //should be true
+  if(!testSuccess){
+    std::cout << "01: Test 2: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 2: failed\n";
+  }
+
+  testSuccess |= parser.Parse(2, c2) ? 0 : 1;             //should be true
+  if(!testSuccess){
+    std::cout << "01: Test 3: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 3: failed\n";
+  }
+
+  testSuccess |= parser.Parse(3, c3) ? 0 : 1;             //should be true
+  if(!testSuccess){
+    std::cout << "01: Test 4: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 4: failed\n";
+  }
+
+  testSuccess |= parser.Parse(2, c4) ? 0 : 1;             //should be true
+  if(!testSuccess){
+    std::cout << "01: Test 5: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 5: failed\n";
+  }
+
+  testSuccess |= parser.Parse(2, onlyDash) ? 1 : 0;       //should be false
+  if(!testSuccess){
+    std::cout << "01: Test 6: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 6: failed\n";
+  }
+
+  testSuccess |= parser.Parse(2, onlyEquals) ? 1 : 0;     //should be false
+  if(!testSuccess){
+    std::cout << "01: Test 7: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 7: failed\n";
+  }
+
+  testSuccess |= parser.Parse(1, emptyVal) ? 1 : 0;       //should be false
+  if(!testSuccess){
+    std::cout << "01: Test 8: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 8: failed\n";
+  }
+
+  testSuccess |= parser.Parse(4, multiOpt) ? 1 : 0;       //should be false
+  if(!testSuccess){
+    std::cout << "01: Test 9: success\n";
+  } else {
+    ret |= 1;
+    std::cout << "01: Test 9: failed\n";
+  }
+
+  return ret;
 }

@@ -24,10 +24,8 @@ static const char digits[] = "0123456789abcdef";
 
 char *Printf(char *dst, const void *end, const char *fmt, ...) {
   //check if any argument is empty
-  if (!dst || !end || !fmt) {
-    *dst = END_OF_STRING;
-    return dst;
-  }
+  if (!dst || !end) return nullptr;
+  if (!fmt) return dst;
 
   va_list argList;
   va_start(argList, fmt);
@@ -39,7 +37,7 @@ char *Printf(char *dst, const void *end, const char *fmt, ...) {
     if (FORMAT_IDENT != *position) {
       nextChar = printC(nextChar, end, *position);
 
-      if (!nextChar){
+      if (!nextChar) {
         *dst = END_OF_STRING;
         return dst;
       }
@@ -76,7 +74,7 @@ char *Printf(char *dst, const void *end, const char *fmt, ...) {
           nextChar = printC(nextChar, end, formatChar);
       }
 
-      if (!nextChar){
+      if (!nextChar) {
         *dst = END_OF_STRING;
         return dst;
       } //check if insert was successful
@@ -164,8 +162,8 @@ char *intToBaseString(char *destination, const void *end, unsigned int value, un
   char digit = digits[value % base];    //get char from array "digits"
   value = value / base;                 //shift the value by the amount of base
 
-  if(value) destination = intToBaseString(destination, end, value, base);
-  if(!destination || destination >= end) {
+  if (value) destination = intToBaseString(destination, end, value, base);
+  if (!destination || destination >= end) {
     return nullptr;
   } else {
     destination = printC(destination, end, digit);
