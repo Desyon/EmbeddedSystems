@@ -39,7 +39,13 @@ echo '	$(SILENT_MKDIR)mkdir $(OUTPUT)' >> Makefile
 make start
 make build
 
-for i in $(ls bin/); do ./bin/$i || echo "\n"; done
+COUNTER=1
+
+for i in $(ls bin/); do echo "$COUNTER. Test" && \
+./bin/$i && \
+echo '' && \
+(( COUNTER++ )) \
+; done
 
 if [ $? -eq 0 ]
 then

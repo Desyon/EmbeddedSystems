@@ -14,49 +14,49 @@ int main() {
   testSuccess = Printf(buffer, buffer + 1023,
                        "Forty Two %d %u %c %s %x %b %%", -42, test, '*', "Forty Two", 42, 42) ? 1 : 0;
   if(testSuccess){
-    std::cout << "02: Test 1: success:\t" << buffer << "\n";
+    std::cout << "Test 1: success:\t" << buffer << "\n";
   } else {
     ret = 1;
-    std::cout << "02: Test 1: failed\n";
+    std::cout << "Test 1: failed\n";
   }
 
   buffer[0] = '\0';
   testSuccess = Printf(buffer, buffer + 1023, "%w %%%") ? 1 : 0;
   if(testSuccess){
-    std::cout << "02: Test 2: success:\t" << buffer << "\n";
+    std::cout << "Test 2: success:\t" << buffer << "\n";
   } else {
     ret |= 1;
-    std::cout << "02: Test 2: failed\n";
+    std::cout << "Test 2: failed\n";
   }
 
   //buffer overflow
   tinyBuffer[0] = '\0';
   testSuccess = Printf(tinyBuffer, tinyBuffer + 9, "A String That is too long for the buffer") ? 1 : 0;
   if(testSuccess){
-    std::cout << "02: Test 3: success\n";
+    std::cout << "Test 3: success\n";
   } else {
     ret |= 1;
-    std::cout << "02: Test 3: failed\n";
+    std::cout << "Test 3: failed\n";
   }
 
   //buffer overflow with numbers
   tinyBuffer[0] = '\0';
   testSuccess = Printf(tinyBuffer, tinyBuffer + 9, "%b", 250000000) ? 1 : 0;
   if(testSuccess){
-    std::cout << "02: Test 4: success\n";
+    std::cout << "Test 4: success\n";
   } else {
     ret |= 1;
-    std::cout << "02: Test 4: failed\n";
+    std::cout << "Test 4: failed\n";
   }
 
   //null fmt
   tinyBuffer[0] = '\0';
   testSuccess = Printf(tinyBuffer, tinyBuffer + 9, 0, 25000) ? 1 : 0;
   if(testSuccess){
-    std::cout << "02: Test 5: success\n";
+    std::cout << "Test 5: success\n";
   } else {
     ret |= 1;
-    std::cout << "02: Test 5: failed\n";
+    std::cout << "Test 5: failed\n";
   }
 
   //empty format string
@@ -64,20 +64,20 @@ int main() {
   testSuccess = Printf(tinyBuffer, tinyBuffer + 9, "") ? 1 : 0;
   std::cout << tinyBuffer;
   if(testSuccess){
-    std::cout << "02: Test 6: success\n";
+    std::cout << "Test 6: success\n";
   } else {
     ret |= 1;
-    std::cout << "02: Test 6: failed\n";
+    std::cout << "Test 6: failed\n";
   }
 
   //null dst/end
   tinyBuffer[0] = '\0';
   testSuccess = Printf(0, 0, "Stuff", 25000) ? 0 : 1;
   if(testSuccess){
-    std::cout << "02: Test 7: success\n";
+    std::cout << "Test 7: success\n";
   } else {
     ret |= 1;
-    std::cout << "02: Test 7: failed\n";
+    std::cout << "Test 7: failed\n";
   }
 
   //if any test failed testSuccess is not 0
