@@ -11,4 +11,4 @@ set(SOURCE_FILES
         src/Main.cpp
         src/Printf.cpp)
 
-add_executable(03String ${SOURCE_FILES})
+add_executable(PreAllocString ${SOURCE_FILES})
