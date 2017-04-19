@@ -25,3 +25,7 @@ A basic implementation of the `printf` function. The implementation can print st
 - `%x` for a hex number
 - `%b` for a binary number
 - `%%` for an percent sign
+
+## Task 3 - strings
+
+A implementation of string that allocates the needed memory at compile time. Mainly a template including a macro ``CREATE(varName, size)`` to make use easier.
