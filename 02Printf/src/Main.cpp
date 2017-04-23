@@ -33,7 +33,7 @@ int main() {
   tinyBuffer[0] = '\0';
   testSuccess = Printf(tinyBuffer, tinyBuffer + 9, "A String That is too long for the buffer") ? 1 : 0;
   if(testSuccess){
-    std::cout << "Test 3: success\n" << tinyBuffer << "\n";
+    std::cout << "Test 3: success:\t" << tinyBuffer << "\n";
   } else {
     ret |= 1;
     std::cout << "Test 3: failed\n";
