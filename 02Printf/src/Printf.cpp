@@ -37,9 +37,9 @@ char *Printf(char *dst, const void *end, const char *fmt, ...) {
     if (FORMAT_IDENT != *position) {
       nextChar = printC(nextChar, end, *position);
 
-      if (!nextChar) {
-        *dst = END_OF_STRING;
-        return dst;
+      if (nextChar >= end) {
+        *nextChar = END_OF_STRING;
+        return nextChar;
       }
       continue;
     } else {
@@ -74,10 +74,11 @@ char *Printf(char *dst, const void *end, const char *fmt, ...) {
           nextChar = printC(nextChar, end, formatChar);
       }
 
-      if (!nextChar) {
-        *dst = END_OF_STRING;
-        return dst;
-      } //check if insert was successful
+      //de facto nextChar is max = to end
+      if (nextChar >= end) {
+        *nextChar = END_OF_STRING;
+        return nextChar;
+      }
       position++;   //increase position pointer to skip next char
     }
   }
@@ -89,7 +90,7 @@ char *Printf(char *dst, const void *end, const char *fmt, ...) {
 }
 
 char *printD(char *destination, const void *end, const int value) {
-  if (destination >= end) return nullptr;
+  if (destination >= end) return destination;
 
   if (0 > value) {
     //print unary '-' if value is below 0
@@ -104,7 +105,7 @@ char *printD(char *destination, const void *end, const int value) {
 }
 
 char *printU(char *destination, const void *end, const unsigned int value) {
-  if (destination >= end) return nullptr;
+  if (destination >= end) return destination;
 
   destination = intToBaseString(destination, end, value, 10);
 
@@ -112,7 +113,7 @@ char *printU(char *destination, const void *end, const unsigned int value) {
 }
 
 char *printC(char *destination, const void *end, const char value) {
-  if (destination >= end) return nullptr;
+  if (destination >= end) return destination;
 
   *destination = value;
 
@@ -120,7 +121,7 @@ char *printC(char *destination, const void *end, const char value) {
 }
 
 char *printS(char *destination, const void *end, char *value) {
-  if (destination >= end) return nullptr;
+  if (destination >= end) return destination;
 
   while (END_OF_STRING != *value) {
     destination = printC(destination, end, *value);
@@ -131,7 +132,7 @@ char *printS(char *destination, const void *end, char *value) {
 }
 
 char *printX(char *destination, const void *end, const unsigned int value) {
-  if (destination >= end) return nullptr;
+  if (destination >= end) return destination;
 
   //print hexadecimal prefix
   destination = printC(destination, end, '0');
@@ -144,7 +145,7 @@ char *printX(char *destination, const void *end, const unsigned int value) {
 }
 
 char *printB(char *destination, const void *end, const unsigned int value) {
-  if (destination >= end) return nullptr;
+  if (destination >= end) return destination;
 
   //print binary prefix
   destination = printC(destination, end, '0');
@@ -157,14 +158,14 @@ char *printB(char *destination, const void *end, const unsigned int value) {
 }
 
 char *intToBaseString(char *destination, const void *end, unsigned int value, unsigned int base) {
-  if (destination >= end) return nullptr;
+  if (destination >= end) return destination;
 
   char digit = digits[value % base];    //get char from array "digits"
   value = value / base;                 //shift the value by the amount of base
 
   if (value) destination = intToBaseString(destination, end, value, base);
-  if (!destination || destination >= end) {
-    return nullptr;
+  if (destination >= end) {
+    return destination;
   } else {
     destination = printC(destination, end, digit);
     return destination;
