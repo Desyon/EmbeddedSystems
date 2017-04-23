@@ -22,13 +22,10 @@ char *intToBaseString(char *, const void *, unsigned int, unsigned int);
 
 static const char digits[] = "0123456789abcdef";
 
-char *Printf(char *dst, const void *end, const char *fmt, ...) {
+char *Printf(char *dst, const void *end, const char *fmt, va_list argList) {
   //check if any argument is empty
   if (!dst || !end) return nullptr;
   if (!fmt) return dst;
-
-  va_list argList;
-  va_start(argList, fmt);
 
   char *nextChar = dst;
 
@@ -37,9 +34,10 @@ char *Printf(char *dst, const void *end, const char *fmt, ...) {
     if (FORMAT_IDENT != *position) {
       nextChar = printC(nextChar, end, *position);
 
-      if (!nextChar) {
-        *dst = END_OF_STRING;
-        return dst;
+      //awful but works
+      if (nextChar >= end) {
+        *nextChar = END_OF_STRING;
+        return nextChar;
       }
       continue;
     } else {
@@ -74,15 +72,14 @@ char *Printf(char *dst, const void *end, const char *fmt, ...) {
           nextChar = printC(nextChar, end, formatChar);
       }
 
-      if (!nextChar) {
-        *dst = END_OF_STRING;
-        return dst;
-      } //check if insert was successful
+      //awful but works
+      if (nextChar >= end) {
+        *nextChar = END_OF_STRING;
+        return nextChar;
+      }
       position++;   //increase position pointer to skip next char
     }
   }
-
-  va_end(argList);
 
   nextChar = printC(nextChar, end, END_OF_STRING);
   return nextChar;
