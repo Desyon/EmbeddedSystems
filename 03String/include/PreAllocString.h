@@ -10,7 +10,7 @@
 template<size_t MAX_SIZE>
 class PreAllocString {
  private:
-  const size_t max_size = MAX_SIZE;
+  const size_t maxSize = MAX_SIZE;
   size_t length;
 
   char content[MAX_SIZE];
@@ -28,12 +28,12 @@ class PreAllocString {
    * @return const size_t maximum size
    */
   constexpr size_t SizeOf() {
-    return max_size;
+    return maxSize;
   }
 
   /**
-   * Returns the current length of the string that is saved
-   * @return size_t current length
+   * Returns the current length of the string including the end of string sign
+   * @return size_t current length; 1 if the string is empty
    */
   size_t GetLength() {
     return length;
@@ -44,7 +44,7 @@ class PreAllocString {
    */
   void Empty() {
     content[0] = '\0';
-    length = 0;
+    length = 1;
   }
 
   /**
@@ -56,19 +56,22 @@ class PreAllocString {
     va_list args;
     va_start(args, format);
 
-    char *newLast = Printf(&content[length], (&content[0] + max_size), format, args);
+    char *newLast = Printf(&content[length - 1], (content + maxSize - 1), format, args);
 
     va_end(args);
 
-    length = newLast - &content[0];
+    length = newLast - content + 1;
   }
 
   /**
    * Inserts a space in the saved string
    */
-  void AddWhitespace() {
-    char *newLast = Printf(&content[length], (&content[0] + max_size), " ");
-    length = newLast - &content[0];
+  void AddWhiteSpace() {
+    if (length == maxSize) return;
+
+    content[length - 1] = ' ';
+    content[length] = '\0';
+    length++;
   }
 
   /*
@@ -81,6 +84,8 @@ class PreAllocString {
    * '+=' <String>  --> appends <String> to this instance
    *
    * '[]' <index>   --> returns the char on the position of index
+   *
+   * casts          --> cast to char* and void*
    */
 
   /**
@@ -142,7 +147,7 @@ class PreAllocString {
    * @return the char on the position of idx if it exists, end of string otherwise
    */
   const char &operator[](const int idx) {
-    if (max_size < idx || length < idx || 0 < idx) return '\0';
+    if (idx > (maxSize - 1) || 0 > idx) return '\0';
     return content[idx];
   }
 
@@ -151,10 +156,16 @@ class PreAllocString {
    * @return the pointer to the first element of the content
    */
   operator const char *() const {
-    return &content[0];
+    return content;
   }
 
-  //TODO:
+  /**
+   * Defines the cast of PreAllocString to a void *
+   * @return the pointer to the first element of the content
+   */
+  operator const void *() const {
+    return content;
+  }
 };
 
 #endif
