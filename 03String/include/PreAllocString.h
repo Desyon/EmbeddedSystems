@@ -5,6 +5,11 @@
 
 #include "Printf.h"
 
+#define NO_COPY(cls) \
+cls(const cls&); \
+cls& operator=(const cls&);
+
+
 #define CREATE(varName, size) PreAllocString<size> varName
 
 template<size_t MAX_SIZE>
@@ -16,6 +21,8 @@ class PreAllocString {
   char content[MAX_SIZE];
 
  public:
+  NO_COPY(PreAllocString);
+
   /**
    * Creates a new empty instance of a PreAllocString
    */
@@ -144,10 +151,9 @@ class PreAllocString {
   /**
    * Defines the [] operator for PreAllocString
    * @param idx index of the char to be returned
-   * @return the char on the position of idx if it exists, end of string otherwise
+   * @return the char on the position of idx if it exists
    */
   const char &operator[](const int idx) {
-    if (idx > (maxSize - 1) || 0 > idx) return '\0';
     return content[idx];
   }
 

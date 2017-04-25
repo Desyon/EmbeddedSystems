@@ -24,6 +24,12 @@ int main() {
   std::cout << "Test 3:\tLength: " << string10.GetLength() << "\tMax: " << string10.SizeOf() << "\t\tContent: " <<
             (const char *) string10 << std::endl;
 
-  /*04 */
+  /*04 [index] Operator*/
+  std::cout << "Test 4:\tChar at: " << 0 << "\tValue: " << string42[0] << "\tContent: " <<
+            (const char *) string42 << std::endl;
 
+  /*05 Empty()*/
+  string10.Empty();
+  std::cout << "Test 5:\tLength: " << string10.GetLength() << "\tMax: " << string10.SizeOf() << "\t\tContent: " <<
+            (const char *) string10 << std::endl;
 }
