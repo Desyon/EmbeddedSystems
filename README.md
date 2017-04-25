@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/desyon/EmbeddedSystems.svg?branch=master)](https://travis-ci.org/desyon/EmbeddedSystems)
+[![Build Status](https://travis-ci.org/Desyon/EmbeddedSystems.svg?branch=master)](https://travis-ci.org/Desyon/EmbeddedSystems)
 # Embedded Systems
 
 This repository contains 5 tasks for a university lecture embedded systems. The Makefile contains
