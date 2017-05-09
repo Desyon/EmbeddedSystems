@@ -34,8 +34,8 @@ int main() {
 
   /* Test 4 - Deallocate unavailable address */
   std::cout << "Test 4.1\t" << test1.Available() << std::endl;
-  test1.Deallocate(tp1);
-  std::cout << "Test 4.2\t" << test1.Available() << std::endl;
   test1.Deallocate(tp1+1);
+  std::cout << "Test 4.2\t" << test1.Available() << std::endl;
+  test1.Deallocate(tp1);
   std::cout << "Test 4.3\t" << test1.Available() << std::endl;
 }
