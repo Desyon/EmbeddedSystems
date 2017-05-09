@@ -28,7 +28,7 @@ void Heap::Deallocate(void *deleted) {
   // nullcheck
   if (!deleted) return;
   // check if address is in memory pool
-  if (deleted < memory || deleted >= &slice[blockCount]) return;
+  if (deleted < memory || deleted >= (memory + blockSize*blockCount)) return;
 
   uint8_t *casted = static_cast<uint8_t *>(deleted);
 
