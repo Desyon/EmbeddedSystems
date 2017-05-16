@@ -12,6 +12,11 @@
 
 #include "PoolAllocator.h"
 
+/**
+ * Endpoint class making up server as well as the client in the current state of the project. Communication only is
+ * roughly tested with some dummy packets that are send from the client to the server. The server acknowledges each
+ * packet.
+ */
 class Endpoint {
  public:
   enum Mode : unsigned int {
@@ -20,6 +25,10 @@ class Endpoint {
   };
 
  public:
+  /**
+   * struct for the packets that are send. Contains a field for payload length as well as a sequence number.
+   * The payload is written to a pointer of an array of size 0.
+   */
   struct Packet {
     uint16_t payloadLength;
     uint16_t sequenceNumber;
@@ -28,6 +37,9 @@ class Endpoint {
     uint8_t data[0];
   } __attribute__((packed));
 
+  /**
+   * Commands supported by the protocol.
+   */
   enum Command : uint16_t {
     Invalid = 0,
     GeneralErrorReply = 1,
@@ -38,6 +50,10 @@ class Endpoint {
     Unsupported = 6
   };
 
+  /**
+   * Wrapper for packets that adds checksums to ensure correct packet transfer and enable easy acknowledging.
+   * This struct is actually send between client and server.
+   */
   struct Wrapper {
     uint16_t totalLength;
     uint16_t sequenceNumber;
@@ -47,6 +63,10 @@ class Endpoint {
     Packet packet[0];
   } __attribute__((packed));
 
+  /**
+   * Gives the type of send wrapper unit (that is a network packet). Available values are ACK, NACK and DATA for
+   * respective purposes.
+   */
   enum WrapperType : uint8_t {
     ACK = 0,
     NACK = 1,
@@ -60,7 +80,7 @@ class Endpoint {
       MAX_TRANSMISSION_LENGTH - sizeof(Wrapper);
   static constexpr uint16_t MAX_PAYLOAD_LENGTH =
       MAX_PACKET_LENGTH - sizeof(Packet);
-  static constexpr size_t MAX_SEND_RETRIES = 10;
+  static constexpr size_t MAX_RETRIES = 10;
 
  public:
   Endpoint()
@@ -76,15 +96,12 @@ class Endpoint {
 
  private:
   bool StartServer(unsigned int, const char *);
-
   bool StartClient(unsigned int, const char *);
 
   bool InitServer(unsigned int, const char *);
-
   bool InitClient(unsigned int, const char *);
 
   bool ShutdownServer();
-
   bool ShutdownClient();
 
   bool ServerCreateResponse(Packet *, Packet *);
@@ -95,11 +112,7 @@ class Endpoint {
 
   /* blocking */
   bool RecvPacket(Packet *buffer);
-
-  /* will not convert payload */
   void HostToNetPacket(Packet *packet);
-
-  /* will not convert payload */
   void NetToHostPacket(Packet *packet);
 
   uint16_t NextSequenceNumber();
@@ -109,18 +122,13 @@ class Endpoint {
   bool ValidateWrapper(const Wrapper *, ssize_t, uint16_t);
 
   bool SendAckWrapper(uint16_t, uint16_t);
-
   bool SendNackWrapper(uint16_t, uint16_t);
-
   bool SendDataWrapper(const Packet *, uint16_t);
 
   /* blocking and validating */
   bool RecvWrapper(Wrapper *, uint16_t);
 
-  /* will not convert possible packet */
   void HostToNetWrapper(Wrapper *);
-
-  /* will not convert possible packet */
   void NetToHostWrapper(Wrapper *);
 
   uint16_t NextWrapperNumber();

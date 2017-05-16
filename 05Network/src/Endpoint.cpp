@@ -3,9 +3,9 @@
 
 bool Endpoint::Start(Mode mode, unsigned int port, const char *ip) {
   if (Mode::Client == mode
-      && !ip) {
+      && !ip) { // ip can be null for servers
     return false;
-  } /* ip may be null for server when binding to all interfaces */
+  }
   m_mode = mode;
   if (Mode::Server == mode) {
     return StartServer(port, ip);
@@ -45,23 +45,22 @@ bool Endpoint::StartServer(unsigned int port, const char *ip) {
       std::cout << "ERROR:\tFailed to recieve packet" << std::endl;
       continue;
     }
-    //std::cout << "Server recieved packet:" << std::endl;
-    //PrintPacketInfo(recvBuf);
+    std::cout << "INFO:\tServer received packet:" << std::endl;
+
     if (!ServerCreateResponse(sendBuf, recvBuf)) {
       std::cout << "ERROR:\tFailed to create response" << std::endl;
       continue;
     }
-    //std::cout << "Server sending packet:" << std::endl;
+    std::cout << "INFO:\tServer send packet:" << std::endl;
     //PrintPacketInfo(sendBuf);
     if (!SendPacket(sendBuf)) {
       std::cout << "ERROR:\tFailed to send response" << std::endl;
       continue;
     }
     if (Command::Shutdown == recvBuf->command) {
-      //std::cout << "Recieved Command::Shutdown, shutting down" << std::endl;
       if (!ShutdownServer()) {
         std::cout << "ERROR:\tFailed to shut down server" << std::endl;
-        return false; /* actually return here */
+        return false;
       }
       running = false;
     }
@@ -75,6 +74,10 @@ bool Endpoint::StartServer(unsigned int port, const char *ip) {
   return true;
 }
 
+/*
+ * Runs client and sends dummy data. If some sending is unsuccessful the client hangs up and stops working. Currently
+ * needs to be shut down with Ctrl + C.
+ */
 bool Endpoint::StartClient(unsigned int port, const char *ip) {
   std::cout << "INFO:\tStarting mode=Client, port=" << port << ", ip=" << ip << std::endl;
 
@@ -94,57 +97,39 @@ bool Endpoint::StartClient(unsigned int port, const char *ip) {
 
   std::cout << "INFO:\tClient running" << std::endl;
 
-  /* arbitrary test commands */
+  /* Dummy data to be send for testing */
 
   memset(sendBuf, 0, MAX_PACKET_LENGTH);
   memset(recvBuf, 0, MAX_PACKET_LENGTH);
-  char data[] = "TEST";
+  char data[] = "FORTY TWO";
   CreatePacket(sendBuf, sizeof(data), NextSequenceNumber(), Command::Echo, 11, data);
-  //std::cout << "Sending:" << std::endl;
-  //PrintPacketInfo(sendBuf);
   SendPacket(sendBuf);
   RecvPacket(recvBuf);
-  //std::cout << "Recieved:" << std::endl;
-  //PrintPacketInfo(recvBuf);
 
   memset(sendBuf, 0, MAX_PACKET_LENGTH);
   memset(recvBuf, 0, MAX_PACKET_LENGTH);
   CreatePacket(sendBuf, 0, NextSequenceNumber(), Command::Invalid, 22, nullptr);
-  //std::cout << "Sending:" << std::endl;
-  //PrintPacketInfo(sendBuf);
   SendPacket(sendBuf);
   RecvPacket(recvBuf);
-  //std::cout << "Recieved:" << std::endl;
-  //PrintPacketInfo(recvBuf);
 
   memset(sendBuf, 0, MAX_PACKET_LENGTH);
   memset(recvBuf, 0, MAX_PACKET_LENGTH);
   CreatePacket(sendBuf, 0, NextSequenceNumber(), Command::Unsupported, 33, nullptr);
-  //std::cout << "Sending:" << std::endl;
-  //PrintPacketInfo(sendBuf);
   SendPacket(sendBuf);
   RecvPacket(recvBuf);
-  //std::cout << "Recieved:" << std::endl;
-  //PrintPacketInfo(recvBuf);
 
-  /* ending with server shutdown */
+  /* send server shutdown to end */
   uint16_t handle = 66;
   while (running) {
     memset(sendBuf, 0, MAX_PACKET_LENGTH);
     memset(recvBuf, 0, MAX_PACKET_LENGTH);
     CreatePacket(sendBuf, 0, NextSequenceNumber(), Command::Shutdown, handle, nullptr);
-    //std::cout << "Sending:" << std::endl;
-    //PrintPacketInfo(sendBuf);
     SendPacket(sendBuf);
     RecvPacket(recvBuf);
-    //std::cout << "Recieved:" << std::endl;
-    //PrintPacketInfo(recvBuf);
+
     if (sendBuf->handle == recvBuf->handle
         && static_cast<uint16_t>(Command::ShutdownReply) == recvBuf->command) {
-      //std::cout << "Recieved ShutdownReply" << std::endl;
       running = false;
-    } else {
-      //std::cout << "Did not recieve ShutdownReply" << std::endl;
     }
     handle++;
   }
@@ -163,7 +148,6 @@ bool Endpoint::StartClient(unsigned int port, const char *ip) {
 }
 
 bool Endpoint::InitServer(unsigned int port, const char *ip) {
-  /* ip may be null for INADDR_ANY */
   std::cout << "INFO:\tInitializing server" << std::endl;
   if (!port) {
     return false;
@@ -174,30 +158,23 @@ bool Endpoint::InitServer(unsigned int port, const char *ip) {
     std::cout << "ERROR:\tFailed to open socket" << std::endl;
     return false;
   }
-  // Bind server to given port and ip or any ip if nullprt
-  // we dont need other_addr here
-  // step 1 find out the server address we are on
+
   memset((char *) &myAddr, 0, sizeof(myAddr));
   myAddr.sin_family = AF_INET;
-  myAddr.sin_port = htons(port);
+  myAddr.sin_port = htons(static_cast<uint16_t>(port));
   if (ip) {
     hostent *hp; /* host information */
     hp = gethostbyname(ip);
     if (hp) {
-      memcpy((void *) &(myAddr.sin_addr), hp->h_addr_list[0], hp->h_length);
-      /* just pick the first one here, TODO validate that its ipv4 */
+      memcpy((void *) &(myAddr.sin_addr), hp->h_addr_list[0], static_cast<size_t>(hp->h_length));
     } else {
-      //std::cout << "Could not get host for " << ip << "fallback to INADDR_ANY" << std::endl;
       myAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     }
   } else {
     myAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   }
 
-  /* step 2 do the bind to server address */
   return bind(comSocket, reinterpret_cast<sockaddr *>(&myAddr), sizeof(myAddr)) >= 0;
-
-  /* all went well */
 }
 
 bool Endpoint::InitClient(unsigned int port, const char *ip) {
@@ -212,13 +189,11 @@ bool Endpoint::InitClient(unsigned int port, const char *ip) {
     return false;
   }
 
-  /* find our address to be any, this is where we bind the socket to */
   memset((char *) &myAddr, 0, sizeof(myAddr));
   myAddr.sin_family = AF_INET;
-  myAddr.sin_port = htons(0); /* any port */
-  myAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* any address */
+  myAddr.sin_port = htons(0);
+  myAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  /* find out server address, this is where we send messages */
   memset((char *) &otherAddr, 0, sizeof(otherAddr));
   otherAddr.sin_family = AF_INET;
   otherAddr.sin_port = htons(static_cast<uint16_t>(port));
@@ -226,16 +201,11 @@ bool Endpoint::InitClient(unsigned int port, const char *ip) {
   hp = gethostbyname(ip);
   if (hp) {
     memcpy((void *) &(otherAddr.sin_addr), hp->h_addr_list[0], static_cast<size_t>(hp->h_length));
-    /* just pick the first one here, TODO validate that its ipv4 */
   } else {
-    //std::cout << "Could not get host for " << ip << std::endl;
     return false;
   }
 
-  /* bind to client addr */
   return 0 <= bind(comSocket, reinterpret_cast<sockaddr *>(&myAddr), sizeof(myAddr));
-
-  /* all went fine */
 }
 
 bool Endpoint::ShutdownServer() {
@@ -261,19 +231,17 @@ bool Endpoint::ServerCreateResponse(Packet *buffer, Packet *received) {
                           NextSequenceNumber(), Command::EchoReply,
                           received->handle, received->data);
     }
-      break;
+
     case Command::Shutdown : {
       return CreatePacket(buffer, 0, NextSequenceNumber(),
                           Command::ShutdownReply, received->handle, nullptr);
     }
-      break;
     default: {
       uint16_t data[1] = {received->command};
       return CreatePacket(buffer, sizeof(data), NextSequenceNumber(),
                           Command::GeneralErrorReply, received->handle,
                           data);
     }
-      break;
   }
 }
 
@@ -300,27 +268,22 @@ bool Endpoint::SendPacket(const Packet *packet) {
   }
   uint8_t buf[MAX_TRANSMISSION_LENGTH];
   Wrapper *recvBuf = reinterpret_cast<Wrapper *>(buf);
-  for (size_t retries = 0; retries < MAX_SEND_RETRIES; retries++) {
+  for (size_t retries = 0; retries < MAX_RETRIES; retries++) {
     uint16_t sendSeq = NextWrapperNumber();
     if (!SendDataWrapper(packet, sendSeq)) {
-      std::cout << "WARN:\tFailed to send Wrapper, retrying " << retries + 1 << "/" << MAX_SEND_RETRIES << std::endl;
-      //usleep(10);
+      std::cout << "WARN:\tFailed to send Wrapper, retrying " << retries + 1 << "/" << MAX_RETRIES << std::endl;
       continue;
     }
     if (!RecvWrapper(recvBuf, sendSeq)
         || static_cast<uint16_t>(WrapperType::ACK) != recvBuf->type) {
-      std::cout << "WARN:\tFailed to recieve Wrapper, retrying " << retries + 1 << "/" << MAX_SEND_RETRIES << std::endl;
-      //usleep(10 << std::endl;
+      std::cout << "WARN:\tFailed to recieve Wrapper, retrying " << retries + 1 << "/" << MAX_RETRIES << std::endl;
       continue;
     }
-    /* went well */
     return true;
   }
-  /* looped to long, failure */
   return false;
 }
 
-/* blocking */
 bool Endpoint::RecvPacket(Packet *buffer) {
   if (!buffer) {
     return false;
@@ -338,28 +301,23 @@ bool Endpoint::RecvPacket(Packet *buffer) {
     }
   }
   memcpy(buffer, recvBuf->packet, recvBuf->packet->payloadLength + sizeof(Packet));
-  /* all went well */
   return true;
 }
 
-/* will not convert payload */
 void Endpoint::HostToNetPacket(Packet *packet) {
   if (!packet) {
     return;
   }
-  /* htons converts host to net uint16_t */
   packet->payloadLength = htons(packet->payloadLength);
   packet->sequenceNumber = htons(packet->sequenceNumber);
   packet->command = htons(packet->command);
   packet->handle = htons(packet->handle);
 }
 
-/* will not convert payload */
 void Endpoint::NetToHostPacket(Packet *packet) {
   if (!packet) {
     return;
   }
-  /* htons converts net to host uint16_t */
   packet->payloadLength = ntohs(packet->payloadLength);
   packet->sequenceNumber = ntohs(packet->sequenceNumber);
   packet->command = ntohs(packet->command);
@@ -380,60 +338,49 @@ uint16_t Endpoint::PacketChecksum(const Packet *packet) {
 
 bool Endpoint::ValidateWrapper(const Wrapper *wrapper, ssize_t bytes_recieved,
                                uint16_t expectedAckNumber) {
-  //std::cout << "Validating wrapper:" << std::endl;
-  //PrintWrapperInfo(wrapper);
   if (!wrapper) {
     return false;
   }
   if (bytes_recieved < static_cast<ssize_t>(sizeof(Wrapper))) {
-    //std::cout << "To few bytes recieved" << std::endl;
     return false;
   }
   if (wrapper->totalLength != bytes_recieved) {
-    //std::cout << "Bytes recieved not matching totalLength" << std::endl;
     return false;
   }
   switch (wrapper->type) {
-    case WrapperType::ACK: /* fallthrough */
+    case WrapperType::ACK:std::cout << "INFO:\tReceived ACK" << std::endl;
     case WrapperType::NACK: {
-      //std::cout << "Validating for ACK / NACK" << std::endl;
       if (wrapper->totalLength != sizeof(Wrapper)) {
-        //std::cout << "Incorrect length" << std::endl;
         return false;
       }
       if (wrapper->ackNumber != expectedAckNumber) {
-        //std::cout << "Incorrect ackNumber" << std::endl;
         return false;
       }
       if (wrapper->packetChecksum != 0) {
-        //std::cout << "Wrong checksum" << std::endl;
         return false;
       }
+      std::cout << "INFO:\tReceived: NACK" << std::endl;
     }
       break;
     case WrapperType::DATA: {
-      //std::cout << "Validating for data" << std::endl;
       if (wrapper->totalLength !=
           sizeof(Wrapper) + sizeof(Packet) + wrapper->packet->payloadLength) {
-        //std::cout << "Incorrect totalLength" << std::endl;
         return false;
       }
       if (wrapper->ackNumber != 0) {
-        //std::cout << "Wrong ackNumber" << std::endl;
         return false;
       }
       if (wrapper->packetChecksum != PacketChecksum(wrapper->packet)) {
-        //std::cout << "Incorrect checksum compare" << std::endl;
         return false;
       }
+      std::cout << "INFO:\tReceived: DATA" << std::endl;
     }
       break;
     default: {
-      //std::cout << "Invalid type" << std::endl;
       return false;
     }
   }
-  //std::cout << "Valid packet" << std::endl;
+
   return true;
 }
 
@@ -445,8 +392,6 @@ bool Endpoint::SendAckWrapper(uint16_t received, uint16_t seqNumber) {
   wrapper.packetChecksum = 0;
   wrapper.type = static_cast<uint16_t>(WrapperType::ACK);
   auto size = wrapper.totalLength;
-  //std::cout << "sending wrapper:" << std::endl;
-  //PrintWrapperInfo(&wrapper);
   HostToNetWrapper(&wrapper);
   return sendto(comSocket, &wrapper, size, 0,
                 reinterpret_cast<sockaddr *>(&otherAddr), sizeof(otherAddr)) >= 0;
@@ -460,8 +405,6 @@ bool Endpoint::SendNackWrapper(uint16_t receivedSeq, uint16_t seqNumber) {
   wrapper.packetChecksum = 0;
   wrapper.type = static_cast<uint16_t>(WrapperType::NACK);
   auto size = wrapper.totalLength;
-  //std::cout << "sending wrapper:" << std::endl;
-  //PrintWrapperInfo(&wrapper);
   HostToNetWrapper(&wrapper);
   return sendto(comSocket, &wrapper, size, 0,
                 reinterpret_cast<sockaddr *>(&otherAddr), sizeof(otherAddr)) >= 0;
@@ -480,15 +423,12 @@ bool Endpoint::SendDataWrapper(const Packet *packet, uint16_t seqNumber) {
   wrapper->type = static_cast<uint16_t>(WrapperType::DATA);
   memcpy(wrapper->packet, packet, sizeof(Packet) + packet->payloadLength);
   auto size = wrapper->totalLength;
-  //std::cout << "sending wrapper:" << std::endl;
-  //PrintWrapperInfo(wrapper);
   HostToNetPacket(wrapper->packet);
   HostToNetWrapper(wrapper);
   return sendto(comSocket, wrapper, size, 0,
                 reinterpret_cast<sockaddr *>(&otherAddr), sizeof(otherAddr)) >= 0;
 }
 
-/* blocking and validating */
 bool Endpoint::RecvWrapper(Wrapper *buffer, uint16_t expectedAckNumber) {
   if (!buffer) {
     return false;
@@ -500,19 +440,14 @@ bool Endpoint::RecvWrapper(Wrapper *buffer, uint16_t expectedAckNumber) {
                                 &recvAddrLength);
   NetToHostWrapper(buffer);
   if (static_cast<uint16_t>(WrapperType::DATA) == buffer->type) {
-    //std::cout << "Converting Net to Host packet" << std::endl;
     NetToHostPacket(buffer->packet);
   }
-  //std::cout << "recieved wrapper:" << std::endl;
-  //PrintWrapperInfo(buffer);
   if (Mode::Server == m_mode) {
-    /* hopefully we only talk to one person */
     memcpy(&otherAddr, &recvAddr, sizeof(recvAddr));
   }
   return ValidateWrapper(buffer, receivedBytes, expectedAckNumber);
 }
 
-/* will not convert possible packet */
 void Endpoint::HostToNetWrapper(Wrapper *wrapper) {
   if (!wrapper) {
     return;
@@ -521,10 +456,8 @@ void Endpoint::HostToNetWrapper(Wrapper *wrapper) {
   wrapper->sequenceNumber = htons(wrapper->sequenceNumber);
   wrapper->ackNumber = htons(wrapper->ackNumber);
   wrapper->packetChecksum = htons(wrapper->packetChecksum);
-  /* type must not be reordered */
 }
 
-/* will not convert possible packet */
 void Endpoint::NetToHostWrapper(Wrapper *wrapper) {
   if (!wrapper) {
     return;
@@ -533,7 +466,6 @@ void Endpoint::NetToHostWrapper(Wrapper *wrapper) {
   wrapper->sequenceNumber = ntohs(wrapper->sequenceNumber);
   wrapper->ackNumber = ntohs(wrapper->ackNumber);
   wrapper->packetChecksum = ntohs(wrapper->packetChecksum);
-  /* type must not be reordered */
 }
 
 uint16_t Endpoint::NextWrapperNumber() {
